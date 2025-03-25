@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quét Voucher - Ốc Đây Nè</title>
+    <title>Kiểm tra Voucher - Ốc Đây Nè</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <!-- Firebase App -->
     <script src="https://www.gstatic.com/firebasejs/9.19.1/firebase-app-compat.js"></script>
     <!-- Firebase Database -->
@@ -24,14 +23,6 @@
             top: -15px;
             left: 10px;
         }
-        #qr-reader {
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        #qr-reader img {
-            width: 100%;
-        }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-yellow-500 to-yellow-900 p-4">
@@ -39,19 +30,35 @@
         <h1 class='text-4xl font-bold text-yellow-200 drop-shadow-md leading-tight kaushan-script'>
             Ô<span class="accent">´</span>c đây nè
         </h1>
-        <p class="text-white mt-2">Quét mã QR để kiểm tra voucher</p>
+        <p class="text-white mt-2">Thông tin voucher</p>
     </div>
 
     <div class="w-full max-w-lg bg-yellow-800 p-6 rounded-xl shadow-xl border-4 border-yellow-600">
-        <div id="qr-reader"></div>
-        <div id="scan-result" class="mt-4 p-4 rounded hidden">
-            <p id="voucher-status" class="text-xl font-bold text-center"></p>
-            <p id="voucher-code" class="text-lg text-center"></p>
+        <div id="loading" class="text-center text-white p-4">
+            <p class="text-xl">⏳ Đang kiểm tra voucher...</p>
+        </div>
+        
+        <div id="voucher-info" class="hidden">
+            <div id="result" class="mt-4 p-4 rounded text-center">
+                <p id="voucher-status" class="text-xl font-bold"></p>
+                <p id="voucher-code" class="text-lg my-2"></p>
+                <p id="expiry-date" class="text-md"></p>
+            </div>
+            
+            <div class="mt-6 text-white">
+                <div class="bg-yellow-700 p-4 rounded-lg">
+                    <p class="text-md">📍 133/9, Khu phố 5, Tam Hiệp, Biên Hòa</p>
+                    <p class="text-md">📞 Liên hệ đặt hàng: <span class="font-bold">0912 498 297</span></p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="error" class="hidden bg-red-700 p-4 rounded mt-4 text-white text-center">
+            <p id="error-message" class="text-lg">Lỗi khi kiểm tra voucher</p>
         </div>
 
-        <div class="mt-4 flex justify-center gap-4">
-            <button onclick="startQRScanner()" class="bg-blue-600 text-white p-2 rounded">Quét lại</button>
-            <button onclick="window.location.href='index.html'" class="bg-gray-600 text-white p-2 rounded">Quay lại</button>
+        <div class="mt-6 flex justify-center">
+            <a href="index.html" class="bg-blue-600 text-white p-2 rounded block text-center w-full">Quay lại trang chủ</a>
         </div>
     </div>
 
@@ -73,90 +80,74 @@
         const database = firebase.database();
         const vouchersRef = database.ref('vouchers');
 
-        function startQRScanner() {
-            // Kiểm tra xem thư viện Html5Qrcode đã được tải chưa
-            if (typeof Html5Qrcode === 'undefined') {
-                alert('Thư viện quét QR không được tải. Vui lòng tải lại trang!');
+        // Lấy mã voucher từ URL
+        function getVoucherCodeFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('code');
+        }
+
+        // Hiển thị thông tin của voucher
+        function checkVoucher() {
+            const voucherCode = getVoucherCodeFromURL();
+            const loading = document.getElementById('loading');
+            const voucherInfo = document.getElementById('voucher-info');
+            const errorDiv = document.getElementById('error');
+            const errorMessage = document.getElementById('error-message');
+            const result = document.getElementById('result');
+            const voucherStatus = document.getElementById('voucher-status');
+            const voucherCodeElement = document.getElementById('voucher-code');
+            const expiryDate = document.getElementById('expiry-date');
+            
+            // Nếu không có mã voucher trong URL
+            if (!voucherCode) {
+                loading.classList.add('hidden');
+                errorDiv.classList.remove('hidden');
+                errorMessage.textContent = "Không tìm thấy mã voucher trong URL";
                 return;
             }
             
-            const html5QrCode = new Html5Qrcode("qr-reader");
-            const scanResult = document.getElementById('scan-result');
-            const voucherStatus = document.getElementById('voucher-status');
-            const voucherCode = document.getElementById('voucher-code');
-            
-            // Reset và hiển thị kết quả quét
-            scanResult.classList.remove('hidden', 'bg-green-700', 'bg-red-700', 'bg-yellow-700');
-            scanResult.classList.add('bg-blue-700');
-            voucherStatus.textContent = 'Đang quét...';
-            voucherCode.textContent = 'Đưa mã QR vào camera';
-            
-            html5QrCode.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: 250 },
-                (decodedText) => {
-                    html5QrCode.stop();
+            // Kiểm tra trạng thái voucher từ Firebase
+            vouchersRef.once('value').then((snapshot) => {
+                loading.classList.add('hidden');
+                
+                if (snapshot.exists()) {
+                    const vouchers = Object.values(snapshot.val());
+                    const foundVoucher = vouchers.find(v => v.code === voucherCode);
                     
-                    // Xử lý văn bản đã quét
-                    let scannedCode = decodedText;
-                    console.log("Mã QR đã quét:", scannedCode);
-                    
-                    scanResult.classList.remove('bg-blue-700', 'bg-green-700', 'bg-red-700', 'bg-yellow-700');
-                    scanResult.classList.add('bg-yellow-700');
-                    voucherStatus.textContent = '⏳ Đang kiểm tra...';
-                    voucherCode.textContent = `Mã: ${scannedCode}`;
-                    
-                    // Kiểm tra trạng thái voucher từ Firebase
-                    vouchersRef.once('value').then((snapshot) => {
-                        console.log("Dữ liệu Firebase:", snapshot.val());
+                    if (foundVoucher) {
+                        voucherInfo.classList.remove('hidden');
+                        result.classList.remove('bg-green-700', 'bg-red-700', 'bg-yellow-700');
+                        voucherCodeElement.textContent = `Mã: ${foundVoucher.code}`;
+                        expiryDate.textContent = `Hạn sử dụng: ${foundVoucher.expiryDate}`;
                         
-                        if (snapshot.exists()) {
-                            const vouchers = Object.values(snapshot.val());
-                            const foundVoucher = vouchers.find(v => v.code === scannedCode);
-                            
-                            scanResult.classList.remove('bg-yellow-700');
-                            
-                            if (foundVoucher) {
-                                voucherCode.textContent = `Mã: ${foundVoucher.code}`;
-                                if (foundVoucher.used) {
-                                    scanResult.classList.add('bg-red-700');
-                                    voucherStatus.textContent = '❌ Voucher đã được sử dụng!';
-                                } else {
-                                    scanResult.classList.add('bg-green-700');
-                                    voucherStatus.textContent = '✅ Voucher hợp lệ!';
-                                }
-                            } else {
-                                scanResult.classList.add('bg-yellow-700');
-                                voucherStatus.textContent = '⚠️ Voucher không hợp lệ!';
-                                voucherCode.textContent = `Mã quét được: ${scannedCode}`;
-                            }
+                        if (foundVoucher.used) {
+                            result.classList.add('bg-red-700');
+                            voucherStatus.textContent = '❌ Voucher đã được sử dụng!';
                         } else {
-                            console.log("Không có dữ liệu trên Firebase");
-                            scanResult.classList.add('bg-red-700');
-                            voucherStatus.textContent = '❌ Không tìm thấy dữ liệu voucher!';
-                            voucherCode.textContent = 'Vui lòng liên hệ quản lý';
+                            result.classList.add('bg-green-700');
+                            voucherStatus.textContent = '✅ Voucher hợp lệ!';
                         }
-                    }).catch((error) => {
-                        console.error("Lỗi khi truy cập Firebase:", error);
-                        scanResult.classList.add('bg-red-700');
-                        voucherStatus.textContent = '❌ Lỗi khi kiểm tra voucher!';
-                        voucherCode.textContent = `Lỗi: ${error.message}`;
-                    });
-                },
-                (errorMessage) => {
-                    console.error("Lỗi quét QR:", errorMessage);
-                    scanResult.classList.add('bg-red-700');
-                    voucherStatus.textContent = '❌ Lỗi khi quét mã QR!';
-                    voucherCode.textContent = `Lỗi: ${errorMessage}`;
+                    } else {
+                        voucherInfo.classList.remove('hidden');
+                        result.classList.remove('bg-green-700', 'bg-red-700');
+                        result.classList.add('bg-yellow-700');
+                        voucherStatus.textContent = '⚠️ Voucher không hợp lệ!';
+                        voucherCodeElement.textContent = `Mã: ${voucherCode}`;
+                        expiryDate.textContent = '';
+                    }
+                } else {
+                    errorDiv.classList.remove('hidden');
+                    errorMessage.textContent = "Không tìm thấy dữ liệu voucher. Vui lòng liên hệ quản lý!";
                 }
-            ).catch(err => {
-                console.error("Lỗi khi khởi tạo máy quét:", err);
-                alert("Không thể khởi tạo máy quét QR: " + err);
+            }).catch((error) => {
+                loading.classList.add('hidden');
+                errorDiv.classList.remove('hidden');
+                errorMessage.textContent = `Lỗi khi kiểm tra voucher: ${error.message}`;
             });
         }
 
-        // Tự động khởi động máy quét khi trang được tải
-        window.onload = startQRScanner;
+        // Kiểm tra voucher khi trang được tải
+        window.onload = checkVoucher;
     </script>
 </body>
 </html> 
