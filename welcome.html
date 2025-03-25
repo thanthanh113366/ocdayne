@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chào mừng - Ốc Đây Nè</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kaushan+Script&display=swap" rel="stylesheet">
+    <style>
+        .kaushan-script {
+            font-family: 'Kaushan Script', cursive;
+        }
+        .accent {
+            font-family: 'Kaushan Script', cursive;
+            font-size: 2rem;
+            position: relative;
+            top: -15px;
+            left: 10px;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-yellow-500 to-yellow-900 p-4">
+    <div class="w-full max-w-lg bg-yellow-800 p-8 rounded-xl shadow-xl border-4 border-yellow-600 text-center">
+        <h1 class='text-5xl font-bold text-yellow-200 drop-shadow-md leading-tight kaushan-script mb-6'>
+            Ô<span class="accent">´</span>c đây nè
+        </h1>
+        
+        <p class="text-white text-xl mb-8">Chào mừng đến với hệ thống voucher Ốc Đây Nè!</p>
+        
+        <div class="flex flex-col gap-4">
+            <a href="scanner.html" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded">
+                Kiểm tra voucher
+            </a>
+            
+            <a href="index.html" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded">
+                Đăng nhập quản trị
+            </a>
+        </div>
+        
+        <div class="mt-8 text-yellow-300">
+            <p>📞 Liên hệ đặt hàng: <span class='font-bold text-white'>0912 498 297</span></p>
+            <p>📍 133/9, Khu phố 5, Tam Hiệp, Biên Hòa</p>
+        </div>
+    </div>
+
+    <script>
+        // Chuyển hướng trang chủ đến welcome.html
+        if (window.location.pathname === "/" || window.location.pathname === "/index.html") {
+            // Nếu người dùng đang cố truy cập trang chủ, chuyển họ đến welcome
+            window.location.href = "/welcome.html";
+        }
+    </script>
+</body>
+</html> 

@@ -83,7 +83,11 @@
         // Lấy mã voucher từ URL
         function getVoucherCodeFromURL() {
             const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('code');
+            const code = urlParams.get('code');
+            console.log("URL đầy đủ:", window.location.href);
+            console.log("Tham số tìm thấy:", urlParams.toString());
+            console.log("Mã voucher:", code);
+            return code;
         }
 
         // Hiển thị thông tin của voucher
@@ -102,7 +106,16 @@
             if (!voucherCode) {
                 loading.classList.add('hidden');
                 errorDiv.classList.remove('hidden');
-                errorMessage.textContent = "Không tìm thấy mã voucher trong URL";
+                errorMessage.textContent = "Không tìm thấy mã voucher trong URL. URL hiện tại: " + window.location.href;
+                
+                // Thêm nút để nhập mã thủ công
+                const manualEntryButton = document.createElement('button');
+                manualEntryButton.textContent = "Nhập mã voucher thủ công";
+                manualEntryButton.className = "bg-green-600 text-white p-2 rounded mt-4";
+                manualEntryButton.onclick = promptForVoucherCode;
+                errorDiv.appendChild(document.createElement('br'));
+                errorDiv.appendChild(manualEntryButton);
+                
                 return;
             }
             
@@ -144,6 +157,15 @@
                 errorDiv.classList.remove('hidden');
                 errorMessage.textContent = `Lỗi khi kiểm tra voucher: ${error.message}`;
             });
+        }
+
+        // Hàm cho phép nhập mã voucher thủ công
+        function promptForVoucherCode() {
+            const codeInput = prompt("Vui lòng nhập mã voucher của bạn:");
+            if (codeInput && codeInput.trim() !== "") {
+                // Chuyển hướng đến trang hiện tại với mã voucher mới
+                window.location.href = window.location.pathname + "?code=" + encodeURIComponent(codeInput.trim());
+            }
         }
 
         // Kiểm tra voucher khi trang được tải

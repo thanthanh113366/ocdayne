@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voucher Ốc Đây Nè</title>
+    <title>Quản lý Voucher - Ốc Đây Nè</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -28,42 +28,129 @@
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-yellow-500 to-yellow-900 p-4">
-    <div class="w-full max-w-7xl mb-6">
-        <h1 class='text-5xl font-bold text-yellow-200 drop-shadow-md leading-tight kaushan-script text-center mb-6'>
+    <!-- Login Screen -->
+    <div id="login-screen" class="w-full max-w-md bg-yellow-800 p-8 rounded-xl shadow-xl border-4 border-yellow-600 flex flex-col items-center justify-center">
+        <h1 class='text-4xl font-bold text-yellow-200 drop-shadow-md leading-tight kaushan-script mb-6'>
             Ô<span class="accent">´</span>c đây nè
         </h1>
+        <p class="text-white text-center mb-6">Đăng nhập để quản lý voucher</p>
         
-        <div class="bg-yellow-800 p-4 rounded-xl shadow-xl border-2 border-yellow-600 mb-6">
-            <div class="flex flex-wrap gap-4 justify-between items-center">
-                <div class="flex gap-2">
-                    <input type="text" id="search-input" placeholder="Tìm theo mã..." class="p-2 rounded bg-yellow-700 text-white border border-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500">
-                    <button onclick="searchVouchers()" class="bg-blue-600 text-white p-2 rounded">Tìm</button>
-                    <button onclick="resetSearch()" class="bg-gray-600 text-white p-2 rounded">Đặt lại</button>
-                </div>
-                
-                <div class="flex gap-2 items-center">
-                    <label class="text-white">Lọc:</label>
-                    <select id="filter-select" onchange="filterVouchers()" class="p-2 rounded bg-yellow-700 text-white border border-yellow-600 focus:outline-none">
-                        <option value="all">Tất cả</option>
-                        <option value="used">Đã sử dụng</option>
-                        <option value="unused">Chưa sử dụng</option>
-                    </select>
+        <div class="w-full">
+            <div class="mb-4">
+                <label class="block text-yellow-200 text-sm font-bold mb-2" for="username">
+                    Tên đăng nhập
+                </label>
+                <input id="username" type="text" class="w-full p-2 rounded bg-yellow-700 text-white border border-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500" placeholder="Nhập tên đăng nhập...">
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-yellow-200 text-sm font-bold mb-2" for="password">
+                    Mật khẩu
+                </label>
+                <input id="password" type="password" class="w-full p-2 rounded bg-yellow-700 text-white border border-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500" placeholder="Nhập mật khẩu...">
+            </div>
+            
+            <div id="login-error" class="bg-red-700 text-white p-2 rounded mb-4 hidden">
+                Tên đăng nhập hoặc mật khẩu không đúng!
+            </div>
+            
+            <button onclick="login()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                Đăng nhập
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content - Initially Hidden -->
+    <div id="main-content" class="hidden w-full">
+        <div class="w-full max-w-7xl mb-6">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class='text-5xl font-bold text-yellow-200 drop-shadow-md leading-tight kaushan-script'>
+                    Ô<span class="accent">´</span>c đây nè
+                </h1>
+                <button onclick="logout()" class="bg-red-600 text-white p-2 rounded">Đăng xuất</button>
+            </div>
+            
+            <div class="bg-yellow-800 p-4 rounded-xl shadow-xl border-2 border-yellow-600 mb-6">
+                <div class="flex flex-wrap gap-4 justify-between items-center">
+                    <div class="flex gap-2">
+                        <input type="text" id="search-input" placeholder="Tìm theo mã..." class="p-2 rounded bg-yellow-700 text-white border border-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                        <button onclick="searchVouchers()" class="bg-blue-600 text-white p-2 rounded">Tìm</button>
+                        <button onclick="resetSearch()" class="bg-gray-600 text-white p-2 rounded">Đặt lại</button>
+                    </div>
                     
-                    <button onclick="window.location.href='scanner.html'" class="ml-2 bg-green-600 text-white p-2 rounded">Quét QR</button>
+                    <div class="flex gap-2 items-center">
+                        <label class="text-white">Lọc:</label>
+                        <select id="filter-select" onchange="filterVouchers()" class="p-2 rounded bg-yellow-700 text-white border border-yellow-600 focus:outline-none">
+                            <option value="all">Tất cả</option>
+                            <option value="used">Đã sử dụng</option>
+                            <option value="unused">Chưa sử dụng</option>
+                        </select>
+                        
+                        <button onclick="window.location.href='scanner.html'" class="ml-2 bg-green-600 text-white p-2 rounded">Quét QR</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <div class="flex flex-wrap justify-center gap-6" id="voucher-container"></div>
-    
-    <div class="mt-6 flex justify-center gap-2">
-        <button id="prev-page" onclick="changePage(-1)" class="bg-blue-600 text-white p-2 rounded">« Trước</button>
-        <span id="page-info" class="bg-yellow-800 text-white p-2 rounded">Trang 1/5</span>
-        <button id="next-page" onclick="changePage(1)" class="bg-blue-600 text-white p-2 rounded">Sau »</button>
+        
+        <div class="flex flex-wrap justify-center gap-6" id="voucher-container"></div>
+        
+        <div class="mt-6 flex justify-center gap-2">
+            <button id="prev-page" onclick="changePage(-1)" class="bg-blue-600 text-white p-2 rounded">« Trước</button>
+            <span id="page-info" class="bg-yellow-800 text-white p-2 rounded">Trang 1/5</span>
+            <button id="next-page" onclick="changePage(1)" class="bg-blue-600 text-white p-2 rounded">Sau »</button>
+        </div>
     </div>
 
     <script>
+        // Thông tin đăng nhập (đơn giản, không bảo mật)
+        const adminUser = {
+            username: "admin",
+            password: "ocdayne2024"
+        };
+
+        // Kiểm tra đăng nhập
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginError = document.getElementById('login-error');
+            
+            if (username === adminUser.username && password === adminUser.password) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                
+                // Lưu trạng thái đăng nhập
+                sessionStorage.setItem('isLoggedIn', 'true');
+                
+                // Tải dữ liệu voucher
+                loadVouchers();
+            } else {
+                loginError.classList.remove('hidden');
+            }
+        }
+        
+        // Đăng xuất
+        function logout() {
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('main-content').classList.add('hidden');
+            
+            // Xóa trạng thái đăng nhập
+            sessionStorage.removeItem('isLoggedIn');
+        }
+        
+        // Kiểm tra trạng thái đăng nhập khi tải trang
+        function checkLoginState() {
+            const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+            
+            if (isLoggedIn === 'true') {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                loadVouchers();
+            } else {
+                document.getElementById('login-screen').classList.remove('hidden');
+                document.getElementById('main-content').classList.add('hidden');
+            }
+        }
+
         // Cấu hình Firebase (Đăng ký tại: https://console.firebase.google.com/)
         // Dưới đây là cấu hình mẫu, thay thế bằng cấu hình của bạn
         const firebaseConfig = {
@@ -303,8 +390,8 @@
             renderVouchers();
         }
 
-        // Tải voucher khi trang được tải
-        loadVouchers();
+        // Kiểm tra trạng thái đăng nhập khi trang được tải
+        window.onload = checkLoginState;
     </script>
 </body>
 </html> 
