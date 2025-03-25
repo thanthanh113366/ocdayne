@@ -44,10 +44,12 @@
     </div>
 
     <script>
-        // Chuyển hướng trang chủ đến welcome.html
-        if (window.location.pathname === "/" || window.location.pathname === "/index.html") {
-            // Nếu người dùng đang cố truy cập trang chủ, chuyển họ đến welcome
-            window.location.href = "/welcome.html";
+        // Chuyển hướng trang chủ đến welcome.html chỉ trên tên miền GitHub Pages
+        const currentUrl = window.location.href;
+        if ((window.location.pathname === "/" || window.location.pathname === "/index.html") 
+            && currentUrl.includes("thanthanh113366.github.io/ocdayne")) {
+            // Nếu người dùng đang cố truy cập trang chủ trên GitHub Pages, chuyển họ đến welcome
+            window.location.href = "/ocdayne/welcome.html";
         }
     </script>
 </body>

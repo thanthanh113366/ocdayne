@@ -250,8 +250,8 @@
         }
 
         function generateQRCode(text) {
-            // Sử dụng tên miền cố định thay vì tính toán từ URL hiện tại
-            const baseUrl = "https://thecat.id.vn";
+            // Sử dụng tên miền GitHub Pages mặc định thay vì tên miền tùy chỉnh
+            const baseUrl = "https://thanthanh113366.github.io/ocdayne";
             const url = `${baseUrl}/scanner.html?code=${encodeURIComponent(text)}`;
             
             let qr = new QRious({
