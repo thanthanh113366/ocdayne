@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voucher Ốc Đây Nè</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kaushan+Script&display=swap" rel="stylesheet">
+    <style>
+        .kaushan-script {
+            font-family: 'Kaushan Script', cursive;
+            display: flex;
+            align-items: center;
+        }
+        .accent {
+            font-family: 'Kaushan Script', cursive;
+            font-size: 2rem;
+            position: relative;
+            top: -15px;
+            left: 10px;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-yellow-500 to-yellow-900 p-4">
+    <div class="flex flex-wrap justify-center gap-6" id="voucher-container"></div>
+    <div class="mt-6">
+        <button onclick="startQRScanner()" class="bg-blue-600 text-white p-2 rounded">Quét QR</button>
+        <div id="qr-reader" class="mt-4"></div>
+        <div id="scan-result" class="mt-4 p-4 rounded hidden">
+            <p id="voucher-status" class="text-xl font-bold"></p>
+            <p id="voucher-code" class="text-lg"></p>
+        </div>
+    </div>
+    <script>
+        const fixedCodes = ["ags34", "83Hga", "ja8S3", "1KzXo", "QmW9p"];
+        
+        let voucherCodes = JSON.parse(localStorage.getItem('voucherCodes')) || fixedCodes.map((code, i) => ({
+            code: `#${i + 1} - ocdayne${code}20%`,
+            expiryDate: "13/04",
+            used: false
+        }));
+
+        function generateQRCode(text) {
+            let qr = new QRious({
+                value: `${text}`,
+                size: 100
+            });
+            return qr.toDataURL();
+        }
+
+        function renderVouchers() {
+            const container = document.getElementById('voucher-container');
+            container.innerHTML = "";
+            
+            voucherCodes.forEach((voucher, index) => {
+                const voucherElement = document.createElement("div");
+                voucherElement.id = `voucher-${index}`;
+                voucherElement.className = `relative w-[600px] h-[250px] bg-yellow-800 p-8 rounded-xl shadow-xl text-left border-4 border-yellow-600 flex items-center justify-between ${voucher.used ? 'opacity-50 bg-gray-700' : ''}`;
+                voucherElement.innerHTML = `
+                    <div>
+                        <h1 class='text-5xl font-bold text-yellow-200 drop-shadow-md leading-tight kaushan-script'>
+                            Ô<span class="accent">´</span>c đây nè
+                        </h1>
+                        <p class='text-lg font-bold text-yellow-300 leading-relaxed mt-2'>Có cơm chiên mì xào ngon lắm</p>
+                        <p class='text-lg font-bold text-yellow-300 leading-relaxed mt-2'>Hạn sử dụng: ${voucher.expiryDate}</p>
+                        <p class='text-sm italic text-yellow-300 mt-2'>Giảm 20% tổng giá trị hóa đơn</p>
+                    </div>
+                    <div class='flex flex-col items-center'>
+                        <div class='p-2 bg-red-700 border-2 border-red-500 rounded-lg cursor-pointer text-center w-[250px]' onclick='useVoucher(${index})' ondblclick='restoreVoucher(${index})'>
+                            <p class='text-md font-semibold text-white leading-snug'>Code</p>
+                            <p class='text-lg font-bold text-white whitespace-nowrap leading-snug'>${voucher.code}</p>
+                        </div>
+                        <img src="${generateQRCode(voucher.code)}" class='mt-2' />
+                        <div class='mt-4 text-sm text-yellow-300 leading-loose text-center'>
+                            <p>📞 Liên hệ đặt hàng: <span class='font-bold text-white'>0912 498 297</span></p>
+                            <p>📍 133/9, Khu phố 5, Tam Hiệp, Biên Hòa</p>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(voucherElement);
+            });
+        }
+
+        function useVoucher(index) {
+            voucherCodes[index].used = true;
+            localStorage.setItem('voucherCodes', JSON.stringify(voucherCodes));
+            renderVouchers();
+        }
+
+        function restoreVoucher(index) {
+            voucherCodes[index].used = false;
+            localStorage.setItem('voucherCodes', JSON.stringify(voucherCodes));
+            renderVouchers();
+        }
+
+        function startQRScanner() {
+            const html5QrCode = new Html5Qrcode("qr-reader");
+            const scanResult = document.getElementById('scan-result');
+            const voucherStatus = document.getElementById('voucher-status');
+            const voucherCode = document.getElementById('voucher-code');
+            
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: 250 },
+                (decodedText) => {
+                    html5QrCode.stop();
+                    
+                    // Xử lý văn bản đã quét
+                    let scannedCode = decodedText;
+                    
+                    // Kiểm tra trạng thái voucher
+                    const foundVoucher = voucherCodes.find(v => v.code === scannedCode);
+                    
+                    scanResult.classList.remove('hidden', 'bg-green-700', 'bg-red-700');
+                    
+                    if (foundVoucher) {
+                        voucherCode.textContent = `Mã: ${foundVoucher.code}`;
+                        if (foundVoucher.used) {
+                            scanResult.classList.add('bg-red-700');
+                            voucherStatus.textContent = 'Voucher đã được sử dụng!';
+                        } else {
+                            scanResult.classList.add('bg-green-700');
+                            voucherStatus.textContent = 'Voucher hợp lệ!';
+                        }
+                    } else {
+                        scanResult.classList.add('bg-red-700');
+                        voucherStatus.textContent = 'Voucher không hợp lệ!';
+                        voucherCode.textContent = `Mã quét được: ${scannedCode}`;
+                    }
+                },
+                (errorMessage) => {
+                    // Xử lý lỗi quét nếu cần
+                }
+            ).catch(err => console.error(err));
+        }
+
+        renderVouchers();
+    </script>
+</body>
+</html>
