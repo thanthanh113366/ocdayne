@@ -101,8 +101,8 @@
         }
 
         function generateQRCode(text) {
-            // Tạo URL dẫn đến trang scanner.html với tham số voucher code
-            const baseUrl = window.location.href.split('/').slice(0, -1).join('/') || window.location.href;
+            // Sử dụng tên miền cố định thay vì tính toán từ URL hiện tại
+            const baseUrl = "https://thecat.id.vn";
             const url = `${baseUrl}/scanner.html?code=${encodeURIComponent(text)}`;
             
             let qr = new QRious({
