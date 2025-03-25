@@ -30,12 +30,7 @@
 <body class="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-yellow-500 to-yellow-900 p-4">
     <div class="flex flex-wrap justify-center gap-6" id="voucher-container"></div>
     <div class="mt-6">
-        <button onclick="startQRScanner()" class="bg-blue-600 text-white p-2 rounded">Quét QR</button>
-        <div id="qr-reader" class="mt-4"></div>
-        <div id="scan-result" class="mt-4 p-4 rounded hidden">
-            <p id="voucher-status" class="text-xl font-bold"></p>
-            <p id="voucher-code" class="text-lg"></p>
-        </div>
+        <button onclick="window.location.href='scanner.html'" class="bg-blue-600 text-white p-2 rounded">Quét QR</button>
     </div>
     <script>
         // Cấu hình Firebase (Đăng ký tại: https://console.firebase.google.com/)
@@ -170,96 +165,6 @@
             localStorage.setItem('voucherCodes', JSON.stringify(voucherCodes));
             
             renderVouchers();
-        }
-
-        function startQRScanner() {
-            // Kiểm tra xem thư viện Html5Qrcode đã được tải chưa
-            if (typeof Html5Qrcode === 'undefined') {
-                alert('Thư viện quét QR không được tải. Vui lòng tải lại trang!');
-                return;
-            }
-            
-            const html5QrCode = new Html5Qrcode("qr-reader");
-            const scanResult = document.getElementById('scan-result');
-            const voucherStatus = document.getElementById('voucher-status');
-            const voucherCode = document.getElementById('voucher-code');
-            
-            // Reset và hiển thị kết quả quét
-            scanResult.classList.remove('hidden', 'bg-green-700', 'bg-red-700', 'bg-yellow-700');
-            voucherStatus.textContent = 'Đang kiểm tra...';
-            voucherCode.textContent = '';
-            
-            html5QrCode.start(
-                { facingMode: "environment" },
-                { fps: 10, qrbox: 250 },
-                (decodedText) => {
-                    html5QrCode.stop();
-                    
-                    // Xử lý văn bản đã quét
-                    let scannedCode = decodedText;
-                    console.log("Mã QR đã quét:", scannedCode);
-                    
-                    // Kiểm tra trạng thái voucher từ Firebase
-                    vouchersRef.once('value').then((snapshot) => {
-                        console.log("Dữ liệu Firebase:", snapshot.val());
-                        
-                        if (snapshot.exists()) {
-                            const vouchers = Object.values(snapshot.val());
-                            const foundVoucher = vouchers.find(v => v.code === scannedCode);
-                            
-                            if (foundVoucher) {
-                                voucherCode.textContent = `Mã: ${foundVoucher.code}`;
-                                if (foundVoucher.used) {
-                                    scanResult.classList.add('bg-red-700');
-                                    voucherStatus.textContent = '❌ Voucher đã được sử dụng!';
-                                } else {
-                                    scanResult.classList.add('bg-green-700');
-                                    voucherStatus.textContent = '✅ Voucher hợp lệ!';
-                                }
-                            } else {
-                                scanResult.classList.add('bg-yellow-700');
-                                voucherStatus.textContent = '⚠️ Voucher không tìm thấy!';
-                                voucherCode.textContent = `Mã quét được: ${scannedCode}`;
-                            }
-                        } else {
-                            console.log("Không có dữ liệu trên Firebase");
-                            
-                            // Thử dùng dữ liệu từ localStorage
-                            const localVouchers = JSON.parse(localStorage.getItem('voucherCodes')) || [];
-                            const foundVoucher = localVouchers.find(v => v.code === scannedCode);
-                            
-                            if (foundVoucher) {
-                                voucherCode.textContent = `Mã: ${foundVoucher.code}`;
-                                if (foundVoucher.used) {
-                                    scanResult.classList.add('bg-red-700');
-                                    voucherStatus.textContent = '❌ Voucher đã được sử dụng! (dữ liệu local)';
-                                } else {
-                                    scanResult.classList.add('bg-green-700');
-                                    voucherStatus.textContent = '✅ Voucher hợp lệ! (dữ liệu local)';
-                                }
-                            } else {
-                                scanResult.classList.add('bg-yellow-700');
-                                voucherStatus.textContent = '⚠️ Voucher không tìm thấy!';
-                                voucherCode.textContent = `Mã quét được: ${scannedCode}`;
-                            }
-                        }
-                    }).catch((error) => {
-                        console.error("Lỗi khi truy cập Firebase:", error);
-                        scanResult.classList.add('bg-red-700');
-                        voucherStatus.textContent = '❌ Lỗi khi kiểm tra voucher!';
-                        voucherCode.textContent = `Lỗi: ${error.message}`;
-                    });
-                },
-                (errorMessage) => {
-                    console.error("Lỗi quét QR:", errorMessage);
-                    scanResult.classList.add('bg-red-700');
-                    voucherStatus.textContent = '❌ Lỗi khi quét mã QR!';
-                    voucherCode.textContent = `Lỗi: ${errorMessage}`;
-                }
-            ).catch(err => {
-                console.error("Lỗi khi khởi tạo máy quét:", err);
-                alert("Không thể khởi tạo máy quét QR: " + err);
-            });
         }
 
         // Tải voucher khi trang được tải
