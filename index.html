@@ -178,6 +178,11 @@
             const voucherStatus = document.getElementById('voucher-status');
             const voucherCode = document.getElementById('voucher-code');
             
+            // Reset và hiển thị kết quả quét
+            scanResult.classList.remove('hidden', 'bg-green-700', 'bg-red-700', 'bg-yellow-700');
+            voucherStatus.textContent = 'Đang kiểm tra...';
+            voucherCode.textContent = '';
+            
             html5QrCode.start(
                 { facingMode: "environment" },
                 { fps: 10, qrbox: 250 },
@@ -186,33 +191,28 @@
                     
                     // Xử lý văn bản đã quét
                     let scannedCode = decodedText;
-                    console.log("Mã QR đã quét:", scannedCode); // Log để debug
-                    
-                    // Hiển thị scan-result
-                    scanResult.classList.remove('hidden');
+                    console.log("Mã QR đã quét:", scannedCode);
                     
                     // Kiểm tra trạng thái voucher từ Firebase
                     vouchersRef.once('value').then((snapshot) => {
-                        console.log("Dữ liệu Firebase:", snapshot.val()); // Log để debug
+                        console.log("Dữ liệu Firebase:", snapshot.val());
                         
                         if (snapshot.exists()) {
                             const vouchers = Object.values(snapshot.val());
                             const foundVoucher = vouchers.find(v => v.code === scannedCode);
                             
-                            scanResult.classList.remove('bg-green-700', 'bg-red-700', 'bg-yellow-700');
-                            
                             if (foundVoucher) {
                                 voucherCode.textContent = `Mã: ${foundVoucher.code}`;
                                 if (foundVoucher.used) {
                                     scanResult.classList.add('bg-red-700');
-                                    voucherStatus.textContent = 'Voucher đã được sử dụng!';
+                                    voucherStatus.textContent = '❌ Voucher đã được sử dụng!';
                                 } else {
                                     scanResult.classList.add('bg-green-700');
-                                    voucherStatus.textContent = 'Voucher hợp lệ!';
+                                    voucherStatus.textContent = '✅ Voucher hợp lệ!';
                                 }
                             } else {
                                 scanResult.classList.add('bg-yellow-700');
-                                voucherStatus.textContent = 'Voucher không tìm thấy!';
+                                voucherStatus.textContent = '⚠️ Voucher không tìm thấy!';
                                 voucherCode.textContent = `Mã quét được: ${scannedCode}`;
                             }
                         } else {
@@ -222,33 +222,33 @@
                             const localVouchers = JSON.parse(localStorage.getItem('voucherCodes')) || [];
                             const foundVoucher = localVouchers.find(v => v.code === scannedCode);
                             
-                            scanResult.classList.remove('bg-green-700', 'bg-red-700', 'bg-yellow-700');
-                            
                             if (foundVoucher) {
                                 voucherCode.textContent = `Mã: ${foundVoucher.code}`;
                                 if (foundVoucher.used) {
                                     scanResult.classList.add('bg-red-700');
-                                    voucherStatus.textContent = 'Voucher đã được sử dụng! (dữ liệu local)';
+                                    voucherStatus.textContent = '❌ Voucher đã được sử dụng! (dữ liệu local)';
                                 } else {
                                     scanResult.classList.add('bg-green-700');
-                                    voucherStatus.textContent = 'Voucher hợp lệ! (dữ liệu local)';
+                                    voucherStatus.textContent = '✅ Voucher hợp lệ! (dữ liệu local)';
                                 }
                             } else {
                                 scanResult.classList.add('bg-yellow-700');
-                                voucherStatus.textContent = 'Voucher không tìm thấy!';
+                                voucherStatus.textContent = '⚠️ Voucher không tìm thấy!';
                                 voucherCode.textContent = `Mã quét được: ${scannedCode}`;
                             }
                         }
                     }).catch((error) => {
                         console.error("Lỗi khi truy cập Firebase:", error);
-                        scanResult.classList.remove('bg-green-700', 'bg-red-700');
                         scanResult.classList.add('bg-red-700');
-                        voucherStatus.textContent = 'Lỗi khi kiểm tra voucher!';
+                        voucherStatus.textContent = '❌ Lỗi khi kiểm tra voucher!';
                         voucherCode.textContent = `Lỗi: ${error.message}`;
                     });
                 },
                 (errorMessage) => {
                     console.error("Lỗi quét QR:", errorMessage);
+                    scanResult.classList.add('bg-red-700');
+                    voucherStatus.textContent = '❌ Lỗi khi quét mã QR!';
+                    voucherCode.textContent = `Lỗi: ${errorMessage}`;
                 }
             ).catch(err => {
                 console.error("Lỗi khi khởi tạo máy quét:", err);
