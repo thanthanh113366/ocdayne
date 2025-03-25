@@ -28,10 +28,41 @@
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-yellow-500 to-yellow-900 p-4">
-    <div class="flex flex-wrap justify-center gap-6" id="voucher-container"></div>
-    <div class="mt-6">
-        <button onclick="window.location.href='scanner.html'" class="bg-blue-600 text-white p-2 rounded">Quét QR</button>
+    <div class="w-full max-w-7xl mb-6">
+        <h1 class='text-5xl font-bold text-yellow-200 drop-shadow-md leading-tight kaushan-script text-center mb-6'>
+            Ô<span class="accent">´</span>c đây nè
+        </h1>
+        
+        <div class="bg-yellow-800 p-4 rounded-xl shadow-xl border-2 border-yellow-600 mb-6">
+            <div class="flex flex-wrap gap-4 justify-between items-center">
+                <div class="flex gap-2">
+                    <input type="text" id="search-input" placeholder="Tìm theo mã..." class="p-2 rounded bg-yellow-700 text-white border border-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                    <button onclick="searchVouchers()" class="bg-blue-600 text-white p-2 rounded">Tìm</button>
+                    <button onclick="resetSearch()" class="bg-gray-600 text-white p-2 rounded">Đặt lại</button>
+                </div>
+                
+                <div class="flex gap-2 items-center">
+                    <label class="text-white">Lọc:</label>
+                    <select id="filter-select" onchange="filterVouchers()" class="p-2 rounded bg-yellow-700 text-white border border-yellow-600 focus:outline-none">
+                        <option value="all">Tất cả</option>
+                        <option value="used">Đã sử dụng</option>
+                        <option value="unused">Chưa sử dụng</option>
+                    </select>
+                    
+                    <button onclick="window.location.href='scanner.html'" class="ml-2 bg-green-600 text-white p-2 rounded">Quét QR</button>
+                </div>
+            </div>
+        </div>
     </div>
+    
+    <div class="flex flex-wrap justify-center gap-6" id="voucher-container"></div>
+    
+    <div class="mt-6 flex justify-center gap-2">
+        <button id="prev-page" onclick="changePage(-1)" class="bg-blue-600 text-white p-2 rounded">« Trước</button>
+        <span id="page-info" class="bg-yellow-800 text-white p-2 rounded">Trang 1/5</span>
+        <button id="next-page" onclick="changePage(1)" class="bg-blue-600 text-white p-2 rounded">Sau »</button>
+    </div>
+
     <script>
         // Cấu hình Firebase (Đăng ký tại: https://console.firebase.google.com/)
         // Dưới đây là cấu hình mẫu, thay thế bằng cấu hình của bạn
@@ -51,18 +82,27 @@
         const database = firebase.database();
         const vouchersRef = database.ref('vouchers');
 
-        const fixedCodes = ["ags34", "83Hga", "ja8S3", "1KzXo", "QmW9p"];
+        // Tạo 50 mã voucher ngẫu nhiên
+        function generateRandomCode(length) {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return result;
+        }
+
         let voucherCodes = [];
 
         // Tải dữ liệu voucher từ Firebase
         function loadVouchers() {
             vouchersRef.once('value').then((snapshot) => {
-                if (snapshot.exists()) {
-                    // Nếu dữ liệu tồn tại trên Firebase, sử dụng nó
+                if (snapshot.exists() && Object.keys(snapshot.val()).length >= 50) {
+                    // Nếu dữ liệu tồn tại trên Firebase và có ít nhất 50 voucher, sử dụng nó
                     voucherCodes = Object.values(snapshot.val());
                     renderVouchers();
                 } else {
-                    // Nếu không có dữ liệu, tạo dữ liệu mẫu
+                    // Nếu không có dữ liệu hoặc có ít hơn 50 voucher, tạo dữ liệu mới
                     initializeVouchers();
                 }
             }).catch((error) => {
@@ -74,11 +114,20 @@
 
         // Tạo dữ liệu voucher ban đầu
         function initializeVouchers() {
-            voucherCodes = fixedCodes.map((code, i) => ({
-                code: `#${i + 1} - ocdayne${code}20%`,
-                expiryDate: "13/04",
-                used: false
-            }));
+            // Xóa dữ liệu cũ nếu có
+            vouchersRef.remove();
+            
+            voucherCodes = [];
+            
+            // Tạo 50 voucher mới
+            for (let i = 0; i < 50; i++) {
+                const randomCode = generateRandomCode(5);
+                voucherCodes.push({
+                    code: `#${i + 1} - ocdayne${randomCode}20%`,
+                    expiryDate: "04/05",
+                    used: false
+                });
+            }
 
             // Lưu vào Firebase
             voucherCodes.forEach((voucher, index) => {
@@ -92,11 +141,24 @@
 
         // Tải từ localStorage nếu không thể kết nối Firebase
         function loadFromLocalStorage() {
-            voucherCodes = JSON.parse(localStorage.getItem('voucherCodes')) || fixedCodes.map((code, i) => ({
-                code: `#${i + 1} - ocdayne${code}20%`,
-                expiryDate: "13/04",
-                used: false
-            }));
+            voucherCodes = JSON.parse(localStorage.getItem('voucherCodes')) || [];
+            if (voucherCodes.length < 50) {
+                console.log("Tạo voucher mới vì localStorage không có đủ dữ liệu");
+                
+                voucherCodes = [];
+                // Tạo 50 voucher mới
+                for (let i = 0; i < 50; i++) {
+                    const randomCode = generateRandomCode(5);
+                    voucherCodes.push({
+                        code: `#${i + 1} - ocdayne${randomCode}20%`,
+                        expiryDate: "04/05",
+                        used: false
+                    });
+                }
+                
+                // Lưu vào localStorage
+                localStorage.setItem('voucherCodes', JSON.stringify(voucherCodes));
+            }
             renderVouchers();
         }
 
@@ -112,30 +174,100 @@
             return qr.toDataURL();
         }
 
+        // Biến quản lý phân trang và tìm kiếm
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let filteredVouchers = [];
+        
+        // Hàm tìm kiếm voucher
+        function searchVouchers() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            filteredVouchers = voucherCodes.filter(voucher => 
+                voucher.code.toLowerCase().includes(searchTerm)
+            );
+            currentPage = 1;
+            renderVouchers();
+        }
+        
+        // Hàm đặt lại tìm kiếm
+        function resetSearch() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('filter-select').value = 'all';
+            filteredVouchers = [...voucherCodes];
+            currentPage = 1;
+            renderVouchers();
+        }
+        
+        // Hàm lọc voucher
+        function filterVouchers() {
+            const filterValue = document.getElementById('filter-select').value;
+            
+            if (filterValue === 'all') {
+                filteredVouchers = [...voucherCodes];
+            } else if (filterValue === 'used') {
+                filteredVouchers = voucherCodes.filter(voucher => voucher.used);
+            } else if (filterValue === 'unused') {
+                filteredVouchers = voucherCodes.filter(voucher => !voucher.used);
+            }
+            
+            currentPage = 1;
+            renderVouchers();
+        }
+        
+        // Hàm đổi trang
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredVouchers.length / itemsPerPage);
+            
+            currentPage += direction;
+            
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            
+            renderVouchers();
+        }
+
         function renderVouchers() {
             const container = document.getElementById('voucher-container');
             container.innerHTML = "";
             
-            voucherCodes.forEach((voucher, index) => {
+            // Nếu chưa có dữ liệu lọc, sử dụng toàn bộ voucher
+            if (!filteredVouchers || filteredVouchers.length === 0) {
+                filteredVouchers = [...voucherCodes];
+            }
+            
+            // Tính toán phân trang
+            const totalPages = Math.ceil(filteredVouchers.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, filteredVouchers.length);
+            
+            // Cập nhật thông tin trang
+            document.getElementById('page-info').textContent = `Trang ${currentPage}/${totalPages > 0 ? totalPages : 1}`;
+            document.getElementById('prev-page').disabled = currentPage <= 1;
+            document.getElementById('next-page').disabled = currentPage >= totalPages;
+            
+            // Render các voucher trên trang hiện tại
+            const currentPageVouchers = filteredVouchers.slice(startIndex, endIndex);
+            
+            currentPageVouchers.forEach((voucher, index) => {
                 const voucherElement = document.createElement("div");
-                voucherElement.id = `voucher-${index}`;
-                voucherElement.className = `relative w-[600px] h-[250px] bg-yellow-800 p-8 rounded-xl shadow-xl text-left border-4 border-yellow-600 flex items-center justify-between ${voucher.used ? 'opacity-50 bg-gray-700' : ''}`;
+                voucherElement.id = `voucher-${startIndex + index}`;
+                voucherElement.className = `relative w-[300px] h-[400px] bg-yellow-800 p-4 rounded-xl shadow-xl text-left border-4 border-yellow-600 flex flex-col justify-between ${voucher.used ? 'opacity-50 bg-gray-700' : ''}`;
                 voucherElement.innerHTML = `
                     <div>
-                        <h1 class='text-5xl font-bold text-yellow-200 drop-shadow-md leading-tight kaushan-script'>
-                            Ô<span class="accent">´</span>c đây nè
+                        <h1 class='text-3xl font-bold text-yellow-200 drop-shadow-md leading-tight kaushan-script'>
+                            Ô<span class="accent" style="font-size:1.5rem;top:-10px;">´</span>c đây nè
                         </h1>
-                        <p class='text-lg font-bold text-yellow-300 leading-relaxed mt-2'>Có cơm chiên mì xào ngon lắm</p>
-                        <p class='text-lg font-bold text-yellow-300 leading-relaxed mt-2'>Hạn sử dụng: ${voucher.expiryDate}</p>
+                        <p class='text-md font-bold text-yellow-300 leading-relaxed mt-2'>Có cơm chiên mì xào ngon lắm</p>
+                        <p class='text-md font-bold text-yellow-300 leading-relaxed mt-2'>Hạn sử dụng: ${voucher.expiryDate}</p>
                         <p class='text-sm italic text-yellow-300 mt-2'>Giảm 20% tổng giá trị hóa đơn</p>
                     </div>
                     <div class='flex flex-col items-center'>
-                        <div class='p-2 bg-red-700 border-2 border-red-500 rounded-lg cursor-pointer text-center w-[250px]' onclick='useVoucher(${index})' ondblclick='restoreVoucher(${index})'>
-                            <p class='text-md font-semibold text-white leading-snug'>Code</p>
-                            <p class='text-lg font-bold text-white whitespace-nowrap leading-snug'>${voucher.code}</p>
+                        <div class='p-2 bg-red-700 border-2 border-red-500 rounded-lg cursor-pointer text-center w-full' onclick='useVoucher(${voucherCodes.findIndex(v => v.code === voucher.code)})' ondblclick='restoreVoucher(${voucherCodes.findIndex(v => v.code === voucher.code)})'>
+                            <p class='text-sm font-semibold text-white leading-snug'>Code</p>
+                            <p class='text-md font-bold text-white leading-snug break-all'>${voucher.code}</p>
                         </div>
-                        <img src="${generateQRCode(voucher.code)}" class='mt-2' />
-                        <div class='mt-4 text-sm text-yellow-300 leading-loose text-center'>
+                        <img src="${generateQRCode(voucher.code)}" class='mt-2 w-24 h-24' />
+                        <div class='mt-2 text-xs text-yellow-300 leading-loose text-center'>
                             <p>📞 Liên hệ đặt hàng: <span class='font-bold text-white'>0912 498 297</span></p>
                             <p>📍 133/9, Khu phố 5, Tam Hiệp, Biên Hòa</p>
                         </div>
