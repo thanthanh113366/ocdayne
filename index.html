@@ -477,23 +477,23 @@
                     
                     // Sử dụng HTML cố định thay vì innerHTML để đảm bảo tất cả phần tử được render
                     voucherElement.innerHTML = `
-                        <div style="color: #fde68a; width: 60%; padding: 10px;">
-                            <div style="font-size: 28px; font-weight: bold; margin-bottom: 8px; font-family: 'Kaushan Script', cursive;">
+                        <div style="color: #fde68a; width: 55%; padding: 10px;">
+                            <div style="font-size: 32px; font-weight: bold; margin-bottom: 10px; font-family: 'Kaushan Script', cursive; color: #fde68a;">
                                 Ốc đây nè
                             </div>
-                            <div style="font-size: 16px; font-weight: bold; margin-bottom: 4px;">Có cơm chiên mì xào ngon lắm</div>
-                            <div style="font-size: 16px; font-weight: bold; margin-bottom: 4px;">Hạn sử dụng: ${voucher.expiryDate}</div>
-                            <div style="font-size: 14px; font-style: italic;">Giảm 20% tổng giá trị hóa đơn</div>
+                            <div style="font-size: 18px; font-weight: bold; margin-bottom: 6px; color: #fde68a;">Có cơm chiên mì xào ngon lắm</div>
+                            <div style="font-size: 18px; font-weight: bold; margin-bottom: 6px; color: #fde68a;">Hạn sử dụng: ${voucher.expiryDate}</div>
+                            <div style="font-size: 16px; font-style: italic; color: #fde68a;">Giảm 20% tổng giá trị hóa đơn</div>
                         </div>
-                        <div style="display: flex; flex-direction: column; align-items: center; width: 40%;">
+                        <div style="display: flex; flex-direction: column; align-items: center; width: 45%;">
                             <div style="background-color: #b91c1c; border: 2px solid #ef4444; border-radius: 8px; padding: 12px; text-align: center; width: 90%; box-sizing: border-box;">
-                                <div style="color: white; font-size: 14px; font-weight: 600;">Code</div>
-                                <div style="color: white; font-size: 18px; font-weight: bold; word-break: break-all;">${voucher.code}</div>
+                                <div style="color: white; font-size: 16px; font-weight: 600;">Code</div>
+                                <div style="color: white; font-size: 20px; font-weight: bold; word-break: break-all;">${voucher.code}</div>
                             </div>
                             <img src="${generateQRCode(voucher.code)}" style="margin-top: 12px; width: 120px; height: 120px;" alt="QR Code" />
-                            <div style="margin-top: 8px; font-size: 12px; color: #fde68a; text-align: center;">
+                            <div style="margin-top: 8px; font-size: 14px; color: #fde68a; text-align: center; width: 100%;">
                                 <div>📞 Liên hệ đặt hàng: <span style="font-weight: bold; color: white;">0912 498 297</span></div>
-                                <div>📍 133/9, Khu phố 5, Tam Hiệp, Biên Hòa</div>
+                                <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">📍 133/9, Khu phố 5, Tam Hiệp, Biên Hòa</div>
                             </div>
                         </div>
                     `;
@@ -507,12 +507,13 @@
                         // Chuyển đổi voucher thành ảnh với cấu hình tốt hơn
                         const canvas = await html2canvas(voucherElement, {
                             scale: 2, // Tỉ lệ cao hơn cho ảnh rõ nét
-                            backgroundColor: '#92400e',
+                            backgroundColor: '#92400e', // Đảm bảo màu nền giống trên web
                             useCORS: true,
-                            logging: true, // Bật logging để dễ debug
+                            logging: false, // Tắt logging khi sử dụng thực tế
                             letterRendering: true,
                             allowTaint: true, // Cho phép taint
-                            foreignObjectRendering: false // Tắt foreignObjectRendering
+                            foreignObjectRendering: false, // Tắt foreignObjectRendering
+                            removeContainer: false // Không xóa container ngay lập tức
                         });
                         
                         // Sử dụng dataURL thay vì blob để tránh lỗi
