@@ -442,100 +442,107 @@
             }
             
             // Thông báo bắt đầu
-            alert(`Chuẩn bị xuất ${selectedVouchers.length} voucher (từ #${startIndex + 1} đến #${endIndex + 1}). Mỗi voucher sẽ được tải xuống lần lượt.`);
+            alert(`Chuẩn bị xuất ${selectedVouchers.length} voucher (từ #${startIndex + 1} đến #${endIndex + 1}). Quá trình này có thể mất một lúc.`);
             
-            // Tạo container tạm thời để render voucher
-            const tempContainer = document.createElement('div');
-            tempContainer.className = 'hidden';
-            tempContainer.style.position = 'absolute';
-            tempContainer.style.left = '-9999px';
-            tempContainer.style.top = '0';
-            document.body.appendChild(tempContainer);
-            
-            // Đếm số lượng tải xuống thành công
-            let downloadCount = 0;
-            
-            // Xử lý từng voucher
-            for (let i = 0; i < selectedVouchers.length; i++) {
-                const voucher = selectedVouchers[i];
-                const voucherIndex = startIndex + i + 1; // Số thứ tự hiển thị
+            try {
+                // Tạo container tạm thời để render voucher
+                const tempContainer = document.createElement('div');
+                tempContainer.style.position = 'absolute';
+                tempContainer.style.left = '-9999px';
+                tempContainer.style.top = '0';
+                document.body.appendChild(tempContainer);
                 
-                // Tạo voucher element
-                const voucherElement = document.createElement('div');
-                voucherElement.id = `export-voucher-${i}`;
-                voucherElement.style.width = '600px';
-                voucherElement.style.height = '300px';
-                voucherElement.style.backgroundColor = '#92400e';
-                voucherElement.style.borderRadius = '12px';
-                voucherElement.style.border = '4px solid #b45309';
-                voucherElement.style.padding = '24px';
-                voucherElement.style.display = 'flex';
-                voucherElement.style.alignItems = 'center';
-                voucherElement.style.justifyContent = 'space-between';
-                
-                voucherElement.innerHTML = `
-                    <div style="color: #fde68a;">
-                        <h1 style="font-size: 28px; font-weight: bold; margin-bottom: 8px; font-family: 'Kaushan Script', cursive;">
-                            Ốc đây nè
-                        </h1>
-                        <p style="font-size: 16px; font-weight: bold; margin-bottom: 4px;">Có cơm chiên mì xào ngon lắm</p>
-                        <p style="font-size: 16px; font-weight: bold; margin-bottom: 4px;">Hạn sử dụng: ${voucher.expiryDate}</p>
-                        <p style="font-size: 14px; font-style: italic;">Giảm 20% tổng giá trị hóa đơn</p>
-                    </div>
-                    <div style="display: flex; flex-direction: column; align-items: center;">
-                        <div style="background-color: #b91c1c; border: 2px solid #ef4444; border-radius: 8px; padding: 12px; text-align: center; width: 280px;">
-                            <p style="color: white; font-size: 14px; font-weight: 600;">Code</p>
-                            <p style="color: white; font-size: 18px; font-weight: bold; word-break: break-all;">${voucher.code}</p>
-                        </div>
-                        <img src="${generateQRCode(voucher.code)}" style="margin-top: 12px; width: 128px; height: 128px;" />
-                        <div style="margin-top: 8px; font-size: 12px; color: #fde68a; text-align: center;">
-                            <p>📞 Liên hệ đặt hàng: <span style="font-weight: bold; color: white;">0912 498 297</span></p>
-                            <p>📍 133/9, Khu phố 5, Tam Hiệp, Biên Hòa</p>
-                        </div>
-                    </div>
-                `;
-                
-                tempContainer.appendChild(voucherElement);
-                
-                try {
-                    // Chuyển đổi voucher thành ảnh
-                    const canvas = await html2canvas(voucherElement, {
-                        scale: 2,
-                        backgroundColor: '#92400e',
-                        useCORS: true,
-                        logging: false,
-                        letterRendering: true
-                    });
+                // Xử lý từng voucher lần lượt
+                for (let i = 0; i < selectedVouchers.length; i++) {
+                    const voucher = selectedVouchers[i];
+                    const voucherIndex = startIndex + i + 1;
                     
-                    // Chuyển canvas thành blob
-                    canvas.toBlob(function(blob) {
+                    // Xóa nội dung container trước đó
+                    tempContainer.innerHTML = '';
+                    
+                    // Tạo element voucher với CSS inline đầy đủ
+                    const voucherElement = document.createElement('div');
+                    voucherElement.id = `export-voucher-${i}`;
+                    voucherElement.style.width = '600px';
+                    voucherElement.style.height = '300px';
+                    voucherElement.style.backgroundColor = '#92400e';
+                    voucherElement.style.borderRadius = '12px';
+                    voucherElement.style.border = '4px solid #b45309';
+                    voucherElement.style.padding = '24px';
+                    voucherElement.style.display = 'flex';
+                    voucherElement.style.alignItems = 'center';
+                    voucherElement.style.justifyContent = 'space-between';
+                    voucherElement.style.boxSizing = 'border-box';
+                    voucherElement.style.position = 'relative';
+                    
+                    // Sử dụng HTML cố định thay vì innerHTML để đảm bảo tất cả phần tử được render
+                    voucherElement.innerHTML = `
+                        <div style="color: #fde68a; width: 60%; padding: 10px;">
+                            <div style="font-size: 28px; font-weight: bold; margin-bottom: 8px; font-family: 'Kaushan Script', cursive;">
+                                Ốc đây nè
+                            </div>
+                            <div style="font-size: 16px; font-weight: bold; margin-bottom: 4px;">Có cơm chiên mì xào ngon lắm</div>
+                            <div style="font-size: 16px; font-weight: bold; margin-bottom: 4px;">Hạn sử dụng: ${voucher.expiryDate}</div>
+                            <div style="font-size: 14px; font-style: italic;">Giảm 20% tổng giá trị hóa đơn</div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: center; width: 40%;">
+                            <div style="background-color: #b91c1c; border: 2px solid #ef4444; border-radius: 8px; padding: 12px; text-align: center; width: 90%; box-sizing: border-box;">
+                                <div style="color: white; font-size: 14px; font-weight: 600;">Code</div>
+                                <div style="color: white; font-size: 18px; font-weight: bold; word-break: break-all;">${voucher.code}</div>
+                            </div>
+                            <img src="${generateQRCode(voucher.code)}" style="margin-top: 12px; width: 120px; height: 120px;" alt="QR Code" />
+                            <div style="margin-top: 8px; font-size: 12px; color: #fde68a; text-align: center;">
+                                <div>📞 Liên hệ đặt hàng: <span style="font-weight: bold; color: white;">0912 498 297</span></div>
+                                <div>📍 133/9, Khu phố 5, Tam Hiệp, Biên Hòa</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    tempContainer.appendChild(voucherElement);
+                    
+                    // Đợi một chút để các phần tử render hoàn chỉnh
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    try {
+                        // Chuyển đổi voucher thành ảnh với cấu hình tốt hơn
+                        const canvas = await html2canvas(voucherElement, {
+                            scale: 2, // Tỉ lệ cao hơn cho ảnh rõ nét
+                            backgroundColor: '#92400e',
+                            useCORS: true,
+                            logging: true, // Bật logging để dễ debug
+                            letterRendering: true,
+                            allowTaint: true, // Cho phép taint
+                            foreignObjectRendering: false // Tắt foreignObjectRendering
+                        });
+                        
+                        // Sử dụng dataURL thay vì blob để tránh lỗi
+                        const dataUrl = canvas.toDataURL('image/png', 1.0);
+                        
+                        // Tạo link tải xuống
                         const downloadLink = document.createElement('a');
-                        const url = URL.createObjectURL(blob);
-                        downloadLink.href = url;
+                        downloadLink.href = dataUrl;
                         downloadLink.download = `voucher-${voucherIndex}-${voucher.code.replace(/[^a-zA-Z0-9]/g, '')}.png`;
                         document.body.appendChild(downloadLink);
                         downloadLink.click();
                         document.body.removeChild(downloadLink);
-                        URL.revokeObjectURL(url);
-                        downloadCount++;
                         
-                        // Thông báo khi hoàn thành tất cả
-                        if (downloadCount === selectedVouchers.length) {
-                            alert(`Đã xuất ${downloadCount} voucher thành công!`);
-                        }
-                    }, 'image/png', 1.0);
-                    
-                    // Xóa voucher element
-                    tempContainer.removeChild(voucherElement);
-                } catch (error) {
-                    console.error(`Lỗi khi xuất voucher ${voucherIndex}:`, error);
+                        // Đợi một chút giữa mỗi lần tải xuống để tránh việc trình duyệt chặn nhiều tải xuống cùng lúc
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                    } catch (error) {
+                        console.error(`Lỗi khi xuất voucher ${voucherIndex}:`, error);
+                        alert(`Lỗi khi xuất voucher #${voucherIndex}: ${error.message}`);
+                    }
                 }
-            }
-            
-            // Xóa container tạm sau khi hoàn thành
-            setTimeout(() => {
+                
+                // Thông báo hoàn thành
+                alert(`Đã hoàn thành quá trình xuất ${selectedVouchers.length} voucher.`);
+                
+                // Xóa container tạm
                 document.body.removeChild(tempContainer);
-            }, 5000);
+            } catch (error) {
+                console.error("Lỗi trong quá trình xuất voucher:", error);
+                alert("Có lỗi xảy ra trong quá trình xuất voucher: " + error.message);
+            }
         }
 
         // Kiểm tra trạng thái đăng nhập khi trang được tải
