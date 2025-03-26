@@ -287,7 +287,8 @@
             
             let qr = new QRious({
                 value: url,
-                size: 100
+                size: 180,    // Tăng kích thước
+                level: 'H'    // High error correction để QR rõ ràng
             });
             return qr.toDataURL();
         }
@@ -372,23 +373,23 @@
                 voucherElement.className = `relative w-[650px] h-[320px] bg-yellow-600 p-6 rounded-xl shadow-xl text-left border-4 border-yellow-700 flex items-center justify-between ${voucher.used ? 'opacity-50 bg-gray-700' : ''}`;
                 voucherElement.innerHTML = `
                     <div style="width: 55%;">
-                        <h1 class='text-5xl font-bold text-yellow-200 drop-shadow-md leading-tight kaushan-script'>
-                            Ô<span class="accent" style="font-size:2.5rem;top:-15px;">´</span>c đây nè
+                        <h1 class='text-6xl font-bold text-yellow-100 drop-shadow-lg leading-tight kaushan-script'>
+                            Ô<span class="accent" style="font-size:3rem;top:-15px;">´</span>c đây nè
                         </h1>
                         <p class='text-xl font-bold text-yellow-200 leading-relaxed mt-3'>Có cơm chiên mì xào ngon lắm</p>
                         <p class='text-xl font-bold text-yellow-200 leading-relaxed mt-3'>Hạn sử dụng: ${voucher.expiryDate}</p>
                         <p class='text-lg italic text-yellow-200 mt-3'>Giảm 20% tổng giá trị hóa đơn</p>
+                        <div class='mt-4 text-sm text-yellow-200 leading-relaxed'>
+                            <p class='mb-1'>📞 Liên hệ đặt hàng: <span class='font-bold text-white'>0912 498 297</span></p>
+                            <p style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;'>📍 133/9, Khu phố 5, Tam Hiệp, Biên Hòa</p>
+                        </div>
                     </div>
                     <div class='flex flex-col items-center' style="width: 45%;">
                         <div class='p-3 bg-red-700 border-2 border-red-500 rounded-lg shadow-lg cursor-pointer text-center w-full' style="transform: rotate(2deg);" onclick='useVoucher(${voucherCodes.findIndex(v => v.code === voucher.code)})' ondblclick='restoreVoucher(${voucherCodes.findIndex(v => v.code === voucher.code)})'>
                             <p class='text-base font-semibold text-white leading-snug'>Code</p>
                             <p class='text-lg font-bold text-white leading-snug break-all'>${voucher.code}</p>
                         </div>
-                        <img src="${generateQRCode(voucher.code)}" class='mt-4 w-40 h-40 border-2 border-white p-1 bg-white rounded-lg shadow-md' />
-                        <div class='mt-4 text-sm text-yellow-200 leading-relaxed text-center'>
-                            <p class='mb-1'>📞 Liên hệ đặt hàng: <span class='font-bold text-white'>0912 498 297</span></p>
-                            <p style='white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;'>📍 133/9, Khu phố 5, Tam Hiệp, Biên Hòa</p>
-                        </div>
+                        <img src="${generateQRCode(voucher.code)}" class='mt-4 w-44 h-44 border-2 border-white p-0 bg-white rounded-lg shadow-md' />
                     </div>
                 `;
                 container.appendChild(voucherElement);
@@ -478,23 +479,23 @@
                     // Sử dụng HTML cố định thay vì innerHTML để đảm bảo tất cả phần tử được render
                     voucherElement.innerHTML = `
                         <div style="width: 55%; font-family: Arial, sans-serif;">
-                            <h1 style="font-size: 32px; font-weight: bold; color: #fef08a; text-shadow: 1px 1px 2px #000; font-family: 'Kaushan Script', cursive;">
-                                Ô<span style="position: relative; font-size: 28px; top: -10px;">´</span>c đây nè
+                            <h1 style="font-size: 38px; font-weight: bold; color: #fef9c3; text-shadow: 2px 2px 3px rgba(0,0,0,0.5); font-family: 'Kaushan Script', cursive;">
+                                Ô<span style="position: relative; font-size: 32px; top: -12px;">´</span>c đây nè
                             </h1>
                             <p style="font-size: 18px; font-weight: bold; color: #fef08a; margin-top: 15px;">Có cơm chiên mì xào ngon lắm</p>
                             <p style="font-size: 18px; font-weight: bold; color: #fef08a; margin-top: 15px;">Hạn sử dụng: ${voucher.expiryDate}</p>
                             <p style="font-size: 16px; font-style: italic; color: #fef08a; margin-top: 15px;">Giảm 20% tổng giá trị hóa đơn</p>
+                            <div style="margin-top: 20px; font-size: 14px; color: #fef08a;">
+                                <p style="margin-bottom: 4px;">📞 Liên hệ đặt hàng: <span style="font-weight: bold; color: white;">0912 498 297</span></p>
+                                <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">📍 133/9, Khu phố 5, Tam Hiệp, Biên Hòa</p>
+                            </div>
                         </div>
                         <div style="width: 45%; display: flex; flex-direction: column; align-items: center;">
                             <div style="padding: 12px; background-color: #b91c1c; border: 2px solid #ef4444; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; width: 100%; transform: rotate(2deg);">
                                 <p style="font-size: 14px; font-weight: 600; color: white; margin: 0 0 4px 0;">Code</p>
                                 <p style="font-size: 16px; font-weight: bold; color: white; margin: 0; overflow-wrap: break-word;">${voucher.code}</p>
                             </div>
-                            <img src="${generateQRCode(voucher.code)}" style="margin-top: 16px; width: 150px; height: 150px; border: 2px solid white; padding: 2px; background-color: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" />
-                            <div style="margin-top: 16px; font-size: 14px; color: #fef08a; text-align: center;">
-                                <p style="margin-bottom: 4px;">📞 Liên hệ đặt hàng: <span style="font-weight: bold; color: white;">0912 498 297</span></p>
-                                <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">📍 133/9, Khu phố 5, Tam Hiệp, Biên Hòa</p>
-                            </div>
+                            <img src="${generateQRCode(voucher.code)}" style="margin-top: 16px; width: 170px; height: 170px; border: 2px solid white; padding: 0; background-color: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);" />
                         </div>
                     `;
                     
