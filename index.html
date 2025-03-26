@@ -242,7 +242,7 @@
                 const randomCode = generateRandomCode(5);
                 voucherCodes.push({
                     code: `#${i + 1} - ocdayne${randomCode}20%`,
-                    expiryDate: "04/05",
+                    expiryDate: "04/5/2025",
                     used: false
                 });
             }
@@ -269,7 +269,7 @@
                     const randomCode = generateRandomCode(5);
                     voucherCodes.push({
                         code: `#${i + 1} - ocdayne${randomCode}20%`,
-                        expiryDate: "04/05",
+                        expiryDate: "04/5/2025",
                         used: false
                     });
                 }
@@ -369,23 +369,23 @@
             currentPageVouchers.forEach((voucher, index) => {
                 const voucherElement = document.createElement("div");
                 voucherElement.id = `voucher-${startIndex + index}`;
-                voucherElement.className = `relative w-[300px] h-[400px] bg-yellow-800 p-4 rounded-xl shadow-xl text-left border-4 border-yellow-600 flex flex-col justify-between ${voucher.used ? 'opacity-50 bg-gray-700' : ''}`;
+                voucherElement.className = `relative w-[600px] h-[300px] bg-yellow-800 p-6 rounded-xl shadow-xl text-left border-4 border-yellow-600 flex items-center justify-between ${voucher.used ? 'opacity-50 bg-gray-700' : ''}`;
                 voucherElement.innerHTML = `
-                    <div>
-                        <h1 class='text-3xl font-bold text-yellow-200 drop-shadow-md leading-tight kaushan-script'>
-                            Ô<span class="accent" style="font-size:1.5rem;top:-10px;">´</span>c đây nè
+                    <div style="width: 55%;">
+                        <h1 class='text-4xl font-bold text-yellow-200 drop-shadow-md leading-tight kaushan-script'>
+                            Ô<span class="accent" style="font-size:2rem;top:-15px;">´</span>c đây nè
                         </h1>
-                        <p class='text-md font-bold text-yellow-300 leading-relaxed mt-2'>Có cơm chiên mì xào ngon lắm</p>
-                        <p class='text-md font-bold text-yellow-300 leading-relaxed mt-2'>Hạn sử dụng: ${voucher.expiryDate}</p>
-                        <p class='text-sm italic text-yellow-300 mt-2'>Giảm 20% tổng giá trị hóa đơn</p>
+                        <p class='text-lg font-bold text-yellow-300 leading-relaxed mt-2'>Có cơm chiên mì xào ngon lắm</p>
+                        <p class='text-lg font-bold text-yellow-300 leading-relaxed mt-2'>Hạn sử dụng: ${voucher.expiryDate}</p>
+                        <p class='text-base italic text-yellow-300 mt-2'>Giảm 20% tổng giá trị hóa đơn</p>
                     </div>
-                    <div class='flex flex-col items-center'>
-                        <div class='p-2 bg-red-700 border-2 border-red-500 rounded-lg cursor-pointer text-center w-full' onclick='useVoucher(${voucherCodes.findIndex(v => v.code === voucher.code)})' ondblclick='restoreVoucher(${voucherCodes.findIndex(v => v.code === voucher.code)})'>
-                            <p class='text-sm font-semibold text-white leading-snug'>Code</p>
-                            <p class='text-md font-bold text-white leading-snug break-all'>${voucher.code}</p>
+                    <div class='flex flex-col items-center' style="width: 45%;">
+                        <div class='p-3 bg-red-700 border-2 border-red-500 rounded-lg cursor-pointer text-center w-full' onclick='useVoucher(${voucherCodes.findIndex(v => v.code === voucher.code)})' ondblclick='restoreVoucher(${voucherCodes.findIndex(v => v.code === voucher.code)})'>
+                            <p class='text-base font-semibold text-white leading-snug'>Code</p>
+                            <p class='text-lg font-bold text-white leading-snug break-all'>${voucher.code}</p>
                         </div>
-                        <img src="${generateQRCode(voucher.code)}" class='mt-2 w-24 h-24' />
-                        <div class='mt-2 text-xs text-yellow-300 leading-loose text-center'>
+                        <img src="${generateQRCode(voucher.code)}" class='mt-3 w-32 h-32' />
+                        <div class='mt-3 text-sm text-yellow-300 leading-relaxed text-center'>
                             <p>📞 Liên hệ đặt hàng: <span class='font-bold text-white'>0912 498 297</span></p>
                             <p>📍 133/9, Khu phố 5, Tam Hiệp, Biên Hòa</p>
                         </div>
